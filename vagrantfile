@@ -1,0 +1,40 @@
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/jammy64"
+
+  config.vm.provider :virtualbox do |v|
+    v.memory = 1024
+    v.cpus = 2
+  end
+
+  boxes = [
+    { name: "backup", ip: "192.168.56.160" },
+    { name: "client", ip: "192.168.56.150" }
+  ]
+
+  boxes.each do |opts|
+    config.vm.define opts[:name] do |srv|
+      srv.vm.hostname = opts[:name]
+      srv.vm.network "private_network", ip: opts[:ip]
+
+      # Провижининг конкретно для web
+      if opts[:name] == "backup"
+        srv.vm.provision "shell", inline: <<-SHELL
+          apt-get update
+          apt-get install borgbackup
+           # Создаём пользователей с домашними каталогами
+           # -m создает домашнюю директорию
+           # -s /bin/bash задает шелл
+           useradd -m -s /bin/bash borg
+           # Создаем папку и делаем владельцем пользователя и группу borg
+           mkdir /var/backup
+           chown borg:borg /var/backup/
+           # Создаем папку для ssh ключей
+           su - borg -c "mkdir .ssh"
+           su - borg -c "touch .ssh/authorized_keys"
+           su - borg -c "chmod 700 .ssh"
+           su - borg -c "chmod 600 .ssh/authorized_keys"
+        SHELL
+      end
+    end
+  end
+end
