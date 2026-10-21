@@ -56,7 +56,7 @@ provision для этой машины будет выглядеть следу�
            su - borg -c "mkdir /home/borg/.ssh"
            cp /vagrant/ssh_key/authorized_keys /home/borg/.ssh/
            chown -R borg:borg /home/borg/.ssh
-           #su - borg -c "touch .ssh/authorized_keys"
+           # Выдаем права пользователю borg на папку и файл authorized_keys
            su - borg -c "chmod 700 .ssh"
            su - borg -c "chmod 600 .ssh/authorized_keys"
         SHELL
